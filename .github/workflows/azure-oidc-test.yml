@@ -24,3 +24,6 @@ jobs:
 
          - name: Verify Azure resource group access
            run: az group show --name rg-azure-secure-infra-dev --query "{name:name,location:location}" -o json  
+
+         - name: Verify Terraform state blob access
+           run: az storage blob show --account-name sttfstatejosiah26 --container-name tfstate --name secure-infra-dev.tfstate --auth-mode login --query name -o tsv  
