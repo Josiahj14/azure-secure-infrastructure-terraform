@@ -37,3 +37,25 @@ jobs:
 
       - name: Generate Terraform plan
         run: terraform plan -input=false -no-color -lock-timeout=5m
+
+
+  terraform-deployment-auth-test:
+      needs: terraform-plan
+      if: github.ref == 'refs/heads/main'
+      runs-on: ubuntu-latest
+      environment: development
+
+      permissions:
+          contents: read
+          id-token: write
+
+      steps:
+        - name: Authenticate to Azure using environment OIDC
+          uses: azure/login@v3
+          with:
+             client-id: ${{ secrets.AZURE_CLIENT_ID    }}
+             tenant-id: ${{ secrets.AZURE_TENANT_ID    }}
+             subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+        - name: Verify Azure access
+          run: az group show --name rg-azure-secure-infra-dev --query name -o tsv
