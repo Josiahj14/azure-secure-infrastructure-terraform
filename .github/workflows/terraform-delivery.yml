@@ -1,0 +1,39 @@
+name: Terraform Delivery
+
+on:
+   workflow_dispatch:
+
+permissions:
+    contents: read
+    id-token: write
+
+jobs:
+  terraform-plan:
+    if: github.ref == 'refs/heads/main'
+     runs-on: ubuntu-latest
+
+    env:
+        ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+             terraform_version: "1.17.1"
+
+      - name: Authenticate to Azure using OIDC
+        uses: azure/login@v3
+        with:
+           client-id: ${{ secrets.AZURE_CLIENT_ID    }}
+           tenant-id: ${{ secrets.AZURE_TENANT_ID    }}
+           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Initialize Terraform backend
+        run: terraform init -input=false  -no-color
+
+      - name: Generate Terraform plan
+        run: terraform plan -input=false -no-color -lock-timeou
