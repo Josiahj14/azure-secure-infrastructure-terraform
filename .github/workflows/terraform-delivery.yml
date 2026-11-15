@@ -75,7 +75,6 @@ jobs:
         with:
           terraform_version: "1.17.1"
 
-    steps:
       - name: Authenticate to Azure using environment OIDC
         uses: azure/login@v3
         with:
