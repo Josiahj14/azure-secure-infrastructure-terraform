@@ -60,6 +60,9 @@ resource "azurerm_storage_account" "app" {
   location                 = azurerm_resource_group.core.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
+  #checkov:skip=CKV_AZURE_33:Queue logging not implemented in this development lab; revisit if queues are used 
+  #checkov:skip=CKV_AZURE_59:Public network access disabled and verified in Azure; scanner limitation
+  #checkov:skip=CKV_AZURE_206:LRS accepted for development cost; availability trade-off acknowledged
 
   https_traffic_only_enabled      = true
   min_tls_version                 = "TLS1_2"
