@@ -38,32 +38,65 @@ jobs:
       - name: Generate Terraform plan
         run: terraform plan -input=false -no-color -lock-timeout=5m -out=tfplan
 
+      - name: Verify saved Terraform plan
+        run: |
+          pwd
+          ls -lh tfplan
+          test -s tfplan
 
-  terraform-deployment-auth-test:
-      needs: terraform-plan
-      if: github.ref == 'refs/heads/main'
-      runs-on: ubuntu-latest
-      environment: development
+      - name: Upload Terraform plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan
+          path: ${{ github.workspace }}/tfplan
+          if-no-files-found: error
+          retention-days: 1
 
-      permissions:
-          contents: read
-          id-token: write
+  terraform-apply:
+    needs: terraform-plan
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: development
 
-      steps:
-        - name: Authenticate to Azure using environment OIDC
-          uses: azure/login@v3
-          with:
-             client-id: ${{ secrets.AZURE_CLIENT_ID    }}
-             tenant-id: ${{ secrets.AZURE_TENANT_ID    }}
-             subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    permissions:
+      contents: read
+      id-token: write
 
-        - name: Initialize Terraform backend
-          run: terraform init -input=false -no-color
+    env:
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
 
-        - name: Download Terraform plan
-          uses: actions/download-artifact@v4
-          with:
-            name: terraform-plan
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-        - name: Apply approved Terraform plan
-          run: terraform apply -input=false -no-color -lock-timeout=5m tfplan
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "1.17.1"
+
+    steps:
+      - name: Authenticate to Azure using environment OIDC
+        uses: azure/login@v3
+        with:
+            client-id: ${{ secrets.AZURE_CLIENT_ID    }}
+            tenant-id: ${{ secrets.AZURE_TENANT_ID    }}
+            subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Initialize Terraform backend
+        run: terraform init -input=false -no-color
+
+      - name: Download Terraform plan
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-plan
+          path: ${{ github.workspace }}
+
+      - name: Verify downloaded Terraform plan
+        run: |
+          pwd
+          ls -lh ./tfplan
+          test -s ./tfplan
+
+      - name: Apply approved Terraform plan
+        run: terraform apply -input=false -no-color -lock-timeout=5m tfplan
