@@ -74,4 +74,3 @@ resource "azurerm_storage_account" "app" {
     project     = "secure-azure-infrastructure"
   }
 }
-
