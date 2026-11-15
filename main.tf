@@ -60,7 +60,24 @@ resource "azurerm_storage_account" "app" {
   location                 = azurerm_resource_group.core.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
+  #checkov:skip=CKV_AZURE_33:Queue logging not implemented in this development lab; revisit if queues are used 
+  #checkov:skip=CKV_AZURE_59:Public network access disabled and verified in Azure; scanner limitation
+  #checkov:skip=CKV_AZURE_206:LRS accepted for development cost; availability trade-off acknowledged
+  #checkov:skip=CKV2_AZURE_33:Development storage has publicn network access disabled; private endpoint connectivity not yet implemented
+  #checkov:skip=CKV2_AZURE_1:No critical data stored in this lab: Microsoft-managed encryption keys accepted for development
 
+  shared_access_key_enabled = false
+
+  blob_properties {
+    delete_retention_policy {
+      days = 7
+    }
+  }
+
+  sas_policy {
+    expiration_period = "1.00:00:00"
+    expiration_action = "Block"
+  }
   https_traffic_only_enabled      = true
   min_tls_version                 = "TLS1_2"
   allow_nested_items_to_be_public = false
@@ -71,4 +88,3 @@ resource "azurerm_storage_account" "app" {
     project     = "secure-azure-infrastructure"
   }
 }
-
