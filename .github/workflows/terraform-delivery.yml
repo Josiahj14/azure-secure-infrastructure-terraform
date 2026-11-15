@@ -36,7 +36,7 @@ jobs:
         run: terraform init -input=false  -no-color
 
       - name: Generate Terraform plan
-        run: terraform plan -input=false -no-color -lock-timeout=5m
+        run: terraform plan -input=false -no-color -lock-timeout=5m -out=tfplan
 
 
   terraform-deployment-auth-test:
@@ -57,5 +57,13 @@ jobs:
              tenant-id: ${{ secrets.AZURE_TENANT_ID    }}
              subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-        - name: Verify Azure access
-          run: az group show --name rg-azure-secure-infra-dev --query name -o tsv
+        - name: Initialize Terraform backend
+          run: terraform init -input=false -no-color
+
+        - name: Download Terraform plan
+          uses: actions/download-artifact@v4
+          with:
+            name: terraform-plan
+
+        - name: Apply approved Terraform plan
+          run: terraform apply -input=false -no-color -lock-timeout=5m tfplan
