@@ -17,3 +17,6 @@ A hands-on cloud engineering and security project focused on provisioning Azure 
 
 ## Project Status
 In Progress
+
+## Infrastructure Change Controls
+Changes tot the main branch are reviewed through pull requests. Terraform CI runs configuration validation and Checkov security scanning before merging.
