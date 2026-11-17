@@ -78,9 +78,10 @@ resource "azurerm_storage_account" "app" {
     expiration_period = "1.00:00:00"
     expiration_action = "Block"
   }
+
   https_traffic_only_enabled      = true
   min_tls_version                 = "TLS1_2"
-  allow_nested_items_to_be_public = false
+  allow_nested_items_to_be_public = true
   public_network_access           = "Disabled"
 
   tags = {
