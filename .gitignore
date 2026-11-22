@@ -4,3 +4,6 @@
 # Terraform state files
 *.tfstate
 *.tfstate.*
+
+# macOS metadata
+.DS_Store
